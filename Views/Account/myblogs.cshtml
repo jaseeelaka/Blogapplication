@@ -1,0 +1,168 @@
+﻿@model List<Blog>
+
+@{
+    ViewData["Title"] = "myblog";
+    Layout = "~/Views/Shared/_LayoutAuthor.cshtml";
+}
+
+@functions {
+    // Define the JavaScript function within the @functions block
+    public string GetTruncatedContent(string content, int maxLength)
+    {
+        if (content == null || content.Length <= maxLength)
+        {
+            return content;
+        }
+        else
+        {
+            return content.Substring(0, maxLength) + "...";
+        }
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Blogs</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    @*<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha384-ezQlWNvFwpNf9Z9zNlOve0s8FXg3oJKA9V/yqL9jESdPUiWsKGCEeCNIf+bAGjBb" crossorigin="anonymous">*@
+</head>
+<body>
+    <script>
+        // Function to get time ago
+        function GetTimeAgo(postedTime) {
+            var currentTime = new Date();
+            var timeDifference = currentTime - new Date(postedTime);
+
+            var seconds = Math.floor(timeDifference / 1000);
+            var minutes = Math.floor(seconds / 60);
+            var hours = Math.floor(minutes / 60);
+            var days = Math.floor(hours / 24);
+
+            console.log(seconds);
+            console.log(minutes);
+            console.log(hours);
+            console.log(days);
+
+            if (days > 0) {
+                return days + " day(s)";
+            } else if (hours > 0) {
+                return hours + " hour(s)";
+            } else if (minutes > 0) {
+                return minutes + " minute(s)";
+            } else {
+                return seconds + " second(s)";
+            }
+        }
+    </script>
+    <div class="container mt-5">
+        <div class="row">
+            @if (Model.Count == 0)
+            {
+                <div class="container">
+                    <div class="row">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            No Record Found
+                        </div>
+                    </div>
+                </div>
+            }
+            @foreach (var blog in Model)
+            {
+                <div class="col-md-4">
+                    <div class="card mb-3">
+                        <div style="height: 200px; overflow: hidden;">
+                            @if (!string.IsNullOrEmpty(blog.hiddenImageName1))
+                            {
+                                <div class="clickable" data-url="@Url.Action("detail", "Account", new { blogid = blog.Blogid })">
+                                    <img src="@blog.hiddenImageName1" class="card-img-top" alt="Blog Image" style="width: 100%; height: auto;">
+                                </div>
+                            }
+                            else if (!string.IsNullOrEmpty(blog.hiddenImageName2))
+                            {
+                                <div class="clickable" data-url="@Url.Action("detail", "Account", new { blogid = blog.Blogid })">
+                                    <img src="@blog.hiddenImageName2" class="card-img-top" alt="Blog Image" style="width: 100%; height: auto;">
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="clickable" data-url="@Url.Action("detail", "Account", new { blogid = blog.Blogid })">
+                                    <img src="@blog.hiddenImageName3" class="card-img-top" alt="Blog Image" style="width: 100%; height: auto;">
+                                </div>
+                            }
+                        </div>
+                        <div class="card-body">
+                            <div class="card-title-limit">
+                                <h5 class="card-title clickable" data-url="@Url.Action("detail", "Account", new { blogid = blog.Blogid })">
+                                    @GetTruncatedContent(@blog.title, 18)
+                                </h5>
+                            </div>
+                            <!-- Display tick if approved -->
+                            @if (blog.ispublished == 1)
+                            {
+                                <span class="text-success" data-toggle="tooltip" data-placement="top" title="Approved"><i class="fas fa-check-circle"></i></span>
+                            }
+                            else
+                            {
+                                <span class="text-success" data-toggle="tooltip" data-placement="top" title="Approved"><i class="fa-solid fa-clock"></i></span>
+
+                            }
+                            <!-- Edit, Delete, and Approve Buttons -->
+                            <div class="text-center mt-2">
+                                <a href="@Url.Action("blog", "Account", new { Blogid = blog.Blogid })" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-pencil-alt"></i></a>
+                                <a href="@Url.Action("delete", "Account", new { blogid = blog.Blogid })" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                                @if (blog.ispublished == 1)
+                                {
+                                    <a href="#" class="btn btn-success" data-toggle="tooltip" data-placement="top" title="Approve"><i class="fas fa-check-circle"></i></a>
+                                }
+                                else
+                                {
+                                    <a href="#" class="btn btn-success" data-toggle="tooltip" data-placement="top" title="Pending for Approval"><i class="fa-solid fa-clock"></i></a>
+                                }
+                            </div>
+
+                            <!-- Displaying time ago and first letter of the username -->
+                            <p class="text-muted mt-2">
+                                <i class="far fa-clock"></i>
+                                <script>document.write(GetTimeAgo('@blog.createddate'));</script> ago |
+                                <span class="user-initial-circle">@blog.username.Substring(0, 1).ToUpper()</span>@blog.username
+                            </p>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and Popper.js (required for Bootstrap) -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <!-- Your script containing GetTimeAgo function -->
+    <!-- Initialize tooltips -->
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+
+    <!-- Use jQuery to handle the click event -->
+    <script>
+        $(document).on('click', '.clickable', function () {
+            var url = $(this).data('url');
+            console.log('Clicked. URL:', url); // Check if the URL is correct
+            window.location.href = url;
+        });
+    </script>
+
+</body>
+</html>
+

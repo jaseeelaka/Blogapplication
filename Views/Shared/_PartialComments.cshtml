@@ -1,0 +1,125 @@
+﻿@model List<Comments>
+@using System.Text
+
+
+
+<ul class="comments">
+    @foreach (var comment in Model)
+    {
+        <li id="comment_@comment.commentid">
+            <!-- Add an ID to the comment -->
+            <div class="comment-content">
+                <span class="user-initial-circle">@comment.commentaddedname.Substring(0, 1).ToUpper()</span>
+                <span>@comment.commentaddedname</span>
+                <span class="comment-time">@TimeHelper.GetTimeAgo(comment.createddate)</span>
+                <br /> <!-- Add a line break -->
+                <p>@Html.Raw(comment.comment)</p>
+                <div>
+                    <button onclick="likeComment('@comment.commentid')" style="background: none; border: none;">
+                        <i class="far fa-thumbs-up"></i>
+                    </button> |
+                    (@comment.nestedCommentCount)<button class="reply-btn" onclick="toggleReply('@comment.commentid', '@comment.blogid')" style="background: none; border: none;">
+                        <i class="far fa-comment"></i>
+                    </button>
+                </div>
+
+                <!-- Reply container will be dynamically added here -->
+            </div>
+        </li>
+    }
+</ul>
+
+<script>
+    function toggleReply(commentId, blogid) {
+        debugger;
+        // Get the reply container
+        var replyContainer = $('#replyContainer_' + commentId);
+
+        // Check if the reply container exists
+        if (!replyContainer.length) {
+            // If the reply container does not exist, dynamically create it
+            var replyContainerHtml = `
+            <div id='replyContainer_${commentId}'>
+                <textarea rows='3' cols='30' id='replyContent_${commentId}' name='replyContent1_${commentId}' class='form-control' rows='5' placeholder='Enter your reply'></textarea><br />
+                <span class='text-danger' id='newCommentError_${commentId}'></span>
+                <button class='btn btn-primary' onclick='submitReply(${commentId}, ${blogid}, ${commentId})'>Respond</button>
+                <p></p>
+                <ul id='nestedCommentList_${commentId}'></ul>
+            </div>
+        `;
+
+            // Append the reply container HTML after the comment
+            $('#comment_' + commentId).append(replyContainerHtml);
+        }
+
+        // Toggle the visibility of the reply container
+        $('#replyContainer_' + commentId).toggle();
+
+        // If the reply container is visible, make an AJAX request to fetch nested comments
+        if ($('#replyContainer_' + commentId).is(':visible')) {
+            $.ajax({
+                url: '/Account/nestedcommentunder',
+                type: 'GET',
+                data: { commentId: commentId, blogid: blogid },
+                success: function (data) {
+                    debugger;
+                    // Append the nested comments HTML to the corresponding container
+                    $('#nestedCommentList_' + commentId).empty().append(data.nestedCommentsHtml);
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText); // Log any errors to the console
+                }
+            });
+        }
+    }
+    function submitReply(commentId, blogid, commentaddedid) {
+        debugger;
+        var replyContent = document.getElementById('replyContent_' + commentId).value;
+        var newComment = $('textarea[name="replyContent1_' + commentId + '"]').val();
+
+        if (!replyContent.trim()) {
+            $('#newCommentError_' + commentId).text("Comment is required");
+            return false;
+        } else {
+            $.ajax({
+                url: '/Account/AddCommentnested',
+                type: "POST",
+                data: {
+                    comment: replyContent,
+                    commentaddedid: commentaddedid,
+                    blogid: blogid,
+                    parentid: commentId
+                },
+                success: function (data) {
+                    debugger;
+                    var nestedCommentsHtml = data.nestedCommentsHtml;
+                    $('#nestedCommentList_' + commentId).empty();
+                    // Append the nested comments HTML to the corresponding container
+                    $('#nestedCommentList_' + commentId).append(nestedCommentsHtml);
+                    // Increment the nested comment count
+                    //var button = $('#nestedCommentList_' + commentId).closest('.comment-content').find('.reply-btn');
+                    //var currentCount = parseInt(button.text().trim()); // Get the current count from the button's text
+                    //var newCount = currentCount + 1;
+                    //button.text('(' + newCount + ')');
+                   
+                    $('#nestedCommentList_' + commentId).find('.reply-btn').each(function () {
+                        var replyButton = $(this);
+                        var nestedCommentId = replyButton.attr('data-comment-id');
+                        replyButton.click(function () {
+                            toggleReply(nestedCommentId, blogid);
+                        });
+                    });
+
+
+
+
+                },
+                error: function (xhr) {
+                    console.log("errorpartialpage ajax");
+                    //redireccionaralLogin(xhr);
+                }
+            });
+        }
+    }
+
+</script>

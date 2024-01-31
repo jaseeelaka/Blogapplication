@@ -1,0 +1,271 @@
+﻿@model HomepageModel
+
+@{
+    ViewData["Title"] = "myblog";
+    Layout = "~/Views/Shared/_LayoutAuthor.cshtml";
+    int? commentaddedid = Context.Session.GetInt32("userid");
+    int blogid = Model.Blog.Blogid;
+
+
+}
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+@*<script>
+        // Function to get time ago
+        function GetTimeAgo(postedTime) {
+            var currentTime = new Date();
+            var timeDifference = currentTime - new Date(postedTime);
+
+            var seconds = Math.floor(timeDifference / 1000);
+            var minutes = Math.floor(seconds / 60);
+            var hours = Math.floor(minutes / 60);
+            var days = Math.floor(hours / 24);
+
+            console.log(seconds);
+            console.log(minutes);
+            console.log(hours);
+            console.log(days);
+
+            if (days > 0) {
+                return days + " day(s)";
+            } else if (hours > 0) {
+                return hours + " hour(s)";
+            } else if (minutes > 0) {
+                return minutes + " minute(s)";
+            } else {
+                return seconds + " second(s)";
+            }
+        }
+    </script>*@
+
+<div class="container mt-5">
+    <div>
+        <h2>@Model.Blog.title</h2>
+        <p class="text-muted mt-2">
+            <span class="user-initial-circle">@Model.Blog.username.Substring(0, 1).ToUpper()</span>@Model.Blog.username
+        </p>
+    </div>
+    @{
+        if (!string.IsNullOrEmpty(Model.Blog.hiddenImageName1))
+        {
+            <img src="@Model.Blog.hiddenImageName1" class="img-fluid fixed-size-image" alt="Blog Image 1">
+        }
+        else if (!string.IsNullOrEmpty(Model.Blog.hiddenImageName2))
+        {
+            <img src="@Model.Blog.hiddenImageName2" class="img-fluid fixed-size-image" alt="Blog Image 2">
+        }
+
+        else
+        {
+
+            if (!string.IsNullOrEmpty(Model.Blog.hiddenImageName3))
+            {
+                <img src="@Model.Blog.hiddenImageName3" class="img-fluid fixed-size-image" alt="Blog Image 3">
+            }
+        }
+    }
+
+    <p>@Html.Raw(Model.Blog.blogContent)</p>
+
+    <!-- Add more images if needed -->
+    @if (!string.IsNullOrEmpty(Model.Blog.hiddenImageName1))
+    {
+        @if (!string.IsNullOrEmpty(Model.Blog.hiddenImageName2))
+        {
+            <img src="@Model.Blog.hiddenImageName2" class="img-fluid fixed-size-image" alt="Blog Image 2">
+        }
+        @if (!string.IsNullOrEmpty(Model.Blog.hiddenImageName3))
+        {
+            <img src="@Model.Blog.hiddenImageName3" class="img-fluid fixed-size-image" alt="Blog Image 3">
+        }
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(Model.Blog.hiddenImageName2))
+        {
+            @if (!string.IsNullOrEmpty(Model.Blog.hiddenImageName3))
+            {
+                <img src="@Model.Blog.hiddenImageName3" class="img-fluid fixed-size-image" alt="Blog Image 3">
+            }
+        }
+    }
+
+    <!-- Other details like category, tags, etc. -->
+    <!-- Display category inside an oval-shaped button -->
+    <p>
+        <button style="border-radius: 20px; padding: 5px 15px; background-color: #ccc;">@Model.Blog.Catname</button>
+
+    </p>
+    <p></p>
+    <p>
+        @{
+            if (!string.IsNullOrEmpty(Model.Blog.tags))
+            {
+                var tagsArray = Model.Blog.tags.Split(',');
+                for (int i = 0; i < tagsArray.Length; i++)
+                {
+                    if (i > 0)
+                    {
+                        <text>, </text>
+                    }
+                    <span style="color: blue;">#@tagsArray[i].Trim()</span>
+                }
+            }
+        }
+    </p>
+    <!-- Display the created date as "one day ago" with a clock symbol -->
+    <p>
+        <i class="far fa-clock"></i>@TimeHelper.GetTimeAgo(@Model.Blog.createddate)
+        @*<script>document.write(GetTimeAgo('@Model.Blog.createddate'));</script> ago*@ |
+        <!-- Like button with Font Awesome icon -->
+        <button id="likeButton" onclick="like()" style="background: none; border: none;"><i class="far fa-thumbs-up"></i> </button> |
+        (@ViewBag.count)<button onclick="toggleComments()" style="background: none; border: none;"><i class="fa-regular fa-comment"></i></button>
+
+
+    </p>
+
+    <div id="commentsSection" style="display: none;">
+        <form id="commentForm">
+            <div class="form-group">
+                <label for="blogContent">Responses</label>
+                <textarea id="blogContent" name="newComment" class="form-control tinymce-editor" placeholder="what are your thoughts" rows="5"></textarea>
+                <span class="text-danger" id="newCommentError"></span>
+            </div>
+            <p></p>
+            <button type="submit" class="btn btn-primary">Respond</button>
+        </form>
+        <p></p>
+        <div id="commentlistcontainer">
+            @Html.Partial("_PartialComments", Model.Comments)
+
+        </div>
+
+
+        <!-- Form to add a new comment -->
+
+    </div>
+
+</div>
+
+<script>
+    // Dummy function for liking the post
+    function like() {
+        var likeButton = document.getElementById('likeButton');
+        if (likeButton.classList.contains('liked')) {
+            likeButton.classList.remove('liked');
+        } else {
+            likeButton.classList.add('liked');
+        }
+    }
+
+
+</script>
+
+<style>
+    .fixed-size-image {
+        max-width: 500px;
+        max-height: 500px;
+    }
+
+    .liked {
+        color: blue;
+    }
+</style>
+<script>
+    // Function to toggle the visibility of the comments section
+    function toggleComments() {
+        var commentsSection = document.getElementById('commentsSection');
+        commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
+    }
+
+
+    // Dummy function for liking the post
+    function like() {
+        var likeButton = document.getElementById('likeButton');
+        if (likeButton.classList.contains('liked')) {
+            likeButton.classList.remove('liked');
+        } else {
+            likeButton.classList.add('liked');
+        }
+    }
+
+    // Function to get time ago
+    function GetTimeAgo(postedTime) {
+        var currentTime = new Date();
+        var timeDifference = currentTime - new Date(postedTime);
+
+        var seconds = Math.floor(timeDifference / 1000);
+        var minutes = Math.floor(seconds / 60);
+        var hours = Math.floor(minutes / 60);
+        var days = Math.floor(hours / 24);
+
+        console.log(seconds);
+        console.log(minutes);
+        console.log(hours);
+        console.log(days);
+
+        if (days > 0) {
+            return days + " day(s)";
+        } else if (hours > 0) {
+            return hours + " hour(s)";
+        } else if (minutes > 0) {
+            return minutes + " minute(s)";
+        } else {
+            return seconds + " second(s)";
+        }
+    }
+
+
+    // Submitting a new comment
+
+</script>
+<script>
+    $(document).ready(function () {
+        $('#commentForm').submit(function (event) {
+            debugger;
+        event.preventDefault();
+        var newComment = $('textarea[name="newComment"]').val();
+        if (!newComment.trim()) {
+            $('#newCommentError').text("Comment is required");
+            return false;
+        } else {
+            $.ajax({
+                url: '/Account/AddComment',
+                type: "POST",
+                data: {
+                    comment: newComment,
+                    commentaddedid: '@commentaddedid',
+                    blogid: '@blogid',
+                    parentid:0
+                },
+                success: function (data) {
+                    debugger;
+                    
+                    $('#commentlistcontainer').html(data);
+                },
+                error: function (xhr) {
+                    console.log("error in partialpage comment")
+                    redireccionaralLogin(xhr);
+                }
+            });
+        }
+    });
+});
+
+</script>
+
+@*<script>
+    function toggleReplyForm(commentId) {
+        alert("jjsjs");
+        var form = document.getElementById("replyForm_" + commentId);
+        form.style.display = form.style.display === "none" ? "block" : "none";
+    }
+
+    function submitReply(commentId) {
+        alert("jjsjs ddd  dddd");
+        var replyText = document.getElementById("replyText_" + commentId).value;
+        // Send AJAX request to submit the reply to the server
+        // Include the parent comment ID (commentId) and the reply text (replyText)
+        // After successful submission, update the UI to display the new reply
+    }
+</script>*@

@@ -1,0 +1,44 @@
+﻿@model List<Categories>
+
+@{
+    Layout = "~/Views/Shared/_LayoutEditor.cshtml";
+    ViewData["Title"] = "blogs";
+}
+
+
+<div class="container-fluid">
+    <h1>Blogs</h1>
+
+    <table class="table table-bordered table-striped dataTable dtr-inline data-table table-listUser">
+        <thead>
+            <tr>
+                <th>Category Id</th>
+                <th>Category Name</th>
+               
+                <!-- Add more headers as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            @if(Model.Count>0)
+            {
+            @foreach (var cat in Model)
+            {
+                <tr>
+                    <td>@cat.Catid</td>
+                    <td>@cat.Catname</td>
+
+                </tr>
+            }
+            }
+            else
+            {
+            <tr>
+                <p>No Record Found</p>
+
+            </tr>
+
+            }
+
+        </tbody>
+    </table>
+</div>

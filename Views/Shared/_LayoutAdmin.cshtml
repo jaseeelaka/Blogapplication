@@ -1,0 +1,153 @@
+﻿<!DOCTYPE html>
+@{
+
+    string username = Context.Session.GetString("username");
+
+}
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Blog</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <script src="https://kit.fontawesome.com/490c0973ab.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://adminlte.io/themes/v3/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="nav-link" href="#">
+                <i class="fas fa-blog fa-2x"></i>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+                <ul class="navbar-nav">
+                </ul>
+
+                <ul class="navbar-nav">
+
+                    <li class="nav-btn car-detail-link">
+
+                        <a class="btn btn-primary-color car-detail-link" href="#">
+
+                            <span class="user-initial-circle">@username.Substring(0, 1).ToUpper()</span>
+                        </a>
+                    </li>
+                   
+                    <li class="nav-btn car-detail-link">
+
+                        <a class="btn btn-primary-color car-detail-link" href="/Admin/logout">
+
+                            <i class="fa-solid fa-right-from-bracket"></i>Sign Out
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar" style="background-color: #f8f9fa;">
+                <div class="position-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Admin/blogs">Blogs</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Admin/categories">Categories</a>
+                        </li>
+                        <!-- Add more menu items as needed -->
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+    <div id="tempDataMessage" class="fixed-top text-center" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <span style="margin-right:5px;"></span>@TempData["Message"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+        else if (TempData["EMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span style="margin-right:5px;"></span>@TempData["EMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+<script>
+    $(function () {
+        $('.dataTable').DataTable({
+            "paging": true,
+            "pageLength": 15,
+            "lengthChange": false,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        function setPopupWidth() {
+            var messageLength = $("#tempDataMessage span").text().length;
+
+            // Adjust the base width and any additional padding/margin values
+            var baseWidth = 500; // Set a base width for the popup
+            var additionalPadding = 20; // Add any additional padding or margin
+
+            var calculatedWidth = baseWidth + (messageLength * 10); // Adjust multiplier as needed
+
+            $("#tempDataMessage").css("width", calculatedWidth + additionalPadding);
+        }
+
+        // Call the function on document ready and on window resize
+        setPopupWidth();
+        $(window).on("resize", setPopupWidth);
+    });
+</script>
+<style>
+    .user-initial-circle {
+        display: inline-block;
+        width: 30px; /* Adjust the width as needed */
+        height: 30px; /* Adjust the height as needed */
+        line-height: 30px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: #007bff; /* You can change the background color */
+        color: #fff; /* You can change the text color */
+        margin-right: 5px; /* Adjust the margin as needed */
+    }
+</style>

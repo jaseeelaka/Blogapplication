@@ -1,0 +1,263 @@
+﻿@model Blog
+@{
+    ViewData["Title"] = "blog";
+    Layout = "~/Views/Shared/_LayoutAuthor.cshtml";
+    int? userid = Context.Session.GetInt32("userid");
+    List<SelectListItem> Categories = (List<SelectListItem>)ViewBag.Categories;
+   
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+
+
+</head>
+
+<body>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <div class="container mt-5">
+        <form method="post" action="blog" enctype="multipart/form-data" onsubmit="return validateForm()">
+            @Html.AntiForgeryToken()
+
+            <!-- Title -->
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" id="title" asp-for="title" class="form-control">
+
+                <span style="color:lightslategrey">Maximum character up to 40</span>
+                <span asp-validation-for="title" class="text-danger" id="titleError"></span>
+            </div>
+            <input type="hidden" asp-for="userid" value='@userid' />
+
+            <input type="hidden" asp-for="Blogid" />
+            <!-- Categories -->
+            <div class="form-group special" style="margin-bottom: 2rem !important;">
+                <label for="categories">Categories:</label>
+                <select id="Catid" name="Catid" class="form-control select2" asp-for="Catid">
+                    <option value="">Choose category</option>
+                    @foreach (var category in ViewBag.Categories)
+                    {
+                        <option value="@category.Value">@category.Text</option>
+                    }
+                </select>
+
+            </div>
+            <span asp-validation-for="Catid" class="text-danger" id="categoryError"></span>
+            <!-- Featured Images -->
+            <div class="form-group">
+                <label for="featuredImage1">Featured Image 1:</label>
+                <input type="file" id="featuredImage1" name="featuredImage1" accept="image/*" class="form-control-file" onchange="displaySelectedImage(this, 'selectedImageContainer1', 'hiddenImageName1')">
+                @*<span asp-validation-for="hiddenImageName1" class="text-danger"></span>*@
+                @if (!string.IsNullOrEmpty(Model.hiddenImageName1))
+                {
+                    <div id="selectedImageContainer1" class="mt-2">
+                        <img id="selected-image" src='@Model.hiddenImageName1' alt="" class="selected-image">
+
+
+                    </div>
+                }
+                else
+                {
+                    <div id="selectedImageContainer1" class="mt-2"></div>
+                }
+                <input type="hidden" id="hiddenImageName1" asp-for="hiddenImageName1">
+            </div>
+
+            <div class="form-group">
+                <label for="featuredImage2">Featured Image 2:</label>
+                <input type="file" id="featuredImage2" name="featuredImage2" accept="image/*" class="form-control-file" onchange="displaySelectedImage(this, 'selectedImageContainer2', 'hiddenImageName2')">
+                @if (!string.IsNullOrEmpty(Model.hiddenImageName2))
+                {
+                    <div id="selectedImageContainer2" class="mt-2">
+                        <img id="selected-image" src='@Model.hiddenImageName2' alt="" class="selected-image">
+
+
+                    </div>
+                }
+                else
+                {
+                    <div id="selectedImageContainer2" class="mt-2"></div>
+                }
+
+                <input type="hidden" id="hiddenImageName2" asp-for="hiddenImageName2" >
+            </div>
+
+            <div class="form-group">
+                <label for="featuredImage3">Featured Image 3:</label>
+                <input type="file" id="featuredImage3" name="featuredImage3" accept="image/*" class="form-control-file" onchange="displaySelectedImage(this, 'selectedImageContainer3', 'hiddenImageName3')">
+                @if (!string.IsNullOrEmpty(Model.hiddenImageName3))
+                {
+                    <div id="selectedImageContainer3" class="mt-2">
+                        <img id="selected-image" src='@Model.hiddenImageName3' alt="" class="selected-image">
+
+
+                    </div>
+                }
+                else
+                {
+                    <div id="selectedImageContainer3" class="mt-2"></div>
+
+                }
+
+                <input type="hidden" asp-for="hiddenImageName3" id="hiddenImageName3" >
+            </div>
+            <span asp-validation-for="hiddenImageName1" id="imagese" class="text-danger"></span>
+            <!-- Blog Content -->
+            <div class="form-group">
+                <label for="blogContent">Blog Content:</label>
+                <textarea  id="blogContent" asp-for="blogContent" class="form-control tinymce-editor" rows="10"></textarea>
+                <span asp-validation-for="blogContent" class="text-danger" id="blogContentError"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="tags">Tags (comma-separated):</label>
+                <input type="text" id="tags" asp-for="tags" class="form-control">
+                <span asp-validation-for="tags" class="text-danger" id="tagsError"></span>
+            </div>
+
+            <input type="hidden" id="Blogid" asp-for="Blogid" class="form-control">
+            @if (Model.Blogid != 0)
+            {
+                <button type="submit" class="btn btn-primary">Edit</button>
+            }
+            else
+            {
+                <button type="submit" class="btn btn-primary">Publish</button>
+            }
+            <!-- Submit Button -->
+
+        </form>
+    </div>
+
+    
+
+</body>
+</html>
+<style>
+    .form-group {
+        margin-bottom: 1rem !important;
+    }
+
+    .selected-image {
+        max-width: 200px; /* Set your desired width */
+        max-height: 150px; /* Set your desired height */
+        margin: 5px;
+    }
+
+    .select2-container .select2-selection--single .select2-selection__rendered {
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        display: block !important;
+        width: 100% !important;
+        padding: 0.375rem 0.75rem !important;
+        font-size: 1rem !important;
+        font-weight: 400 !important;
+        background-color: #fff !important;
+        background-clip: padding-box !important;
+        border: 1px solid #ced4da !important;
+        appearance: none !important;
+        border-radius: 0.25rem !important;
+        transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out !important;
+    }
+
+    .select2-container--default .select2-selection--single {
+        border: 1px solid #ffffff !important;
+    }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 41px !important;
+        }
+
+    .form-group .special {
+        margin-bottom: 2rem !important;
+    }
+</style>
+
+<script>
+    function validateForm() {
+      
+        debugger;
+        var title = document.getElementById("title").value;
+        var category = document.getElementById("Catid").value;
+        var blogContent = document.getElementById("blogContent").value;
+        var tags = document.getElementById("tags").value;
+        var hiddenImageName1 = document.getElementById("hiddenImageName1").value;
+        var hiddenImageName2 = document.getElementById("hiddenImageName2").value;
+        var hiddenImageName3 = document.getElementById("hiddenImageName3").value;
+
+        // Reset previous error messages
+        document.getElementById("titleError").innerHTML = "";
+        document.getElementById("categoryError").innerHTML = "";
+        document.getElementById("blogContentError").innerHTML = "";
+        document.getElementById("tagsError").innerHTML = "";
+
+        if (!title) {
+            document.getElementById("titleError").innerHTML = "Title is required";
+            return false;
+        }
+        console.log(title.length)
+        if (title.length > 40) {
+            document.getElementById("titleError").innerHTML = "Title should be less than or equal to 40 characters";
+            return false;
+        }
+
+        if (!category) {
+            document.getElementById("categoryError").innerHTML = "Category is required";
+            return false;
+        }
+
+        if (!hiddenImageName1 && !hiddenImageName2 && !hiddenImageName3) {
+            /*alert("At least one image is required");*/
+            document.getElementById("imagese").innerHTML = "At least one Image is Required";
+
+            return false;
+        }
+
+        if (!blogContent) {
+            document.getElementById("blogContentError").innerHTML = "Blog Content is required";
+            return false;
+        }
+        else {
+
+        }
+
+
+
+        //if (!tags) {
+        //    document.getElementById("tagsError").innerHTML = "Tags are required";
+        //    return false;
+        //}
+
+        // Check if at least one image is selected
+
+
+        return true;
+    }
+
+    function displaySelectedImage(input, containerId, hiddenFieldName) {
+        var container = document.getElementById(containerId);
+        container.innerHTML = ''; // Clear previous content
+
+        var hiddenField = document.getElementById(hiddenFieldName);
+        hiddenField.value = ''; // Clear previous content
+
+        for (var i = 0; i < input.files.length; i++) {
+            var image = document.createElement('img');
+            image.src = URL.createObjectURL(input.files[i]);
+            image.className = 'selected-image img-thumbnail';
+            container.appendChild(image);
+
+            // Append file name to hidden field
+            hiddenField.value += input.files[i].name + ',';
+        }
+
+        // Remove the trailing comma
+        hiddenField.value = hiddenField.value.slice(0, -1);
+    }
+</script>
+
+

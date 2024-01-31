@@ -1,0 +1,400 @@
+﻿@model HomepageModel
+
+@{
+    ViewData["Title"] = "myblog";
+    Layout = "~/Views/Shared/_LayoutAuthor.cshtml";
+    var FilterFromDate = ViewBag.FilterFromDate;
+    var FilterToDate = ViewBag.FilterToDate;
+    var FilterCatId = ViewBag.FilterCatId;
+    var Filterapplied = ViewBag.Filterapplied;
+
+
+
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Blogs</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <!-- Add your Font Awesome link here -->
+</head>
+<body>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-12 text-right mb-2">
+                <!-- Filter button with Font Awesome icon -->
+                <button id="filterBtn" class="btn btn-primary"><i class="fas fa-filter"></i> Filter</button>
+            </div>
+        </div>
+
+        <input type="hidden" name="filterapplied" id="filterapplied" value="false" />
+        <input type="hidden" name="filterappliedCatid" id="filterappliedCatid" />
+        <input type="hidden" name="filterappliedFromDate" id="filterappliedFromDate" />
+        <input type="hidden" name="filterappliedToDate" id="filterappliedToDate" />
+        <!-- Hidden filter options div -->
+        <div id="filterOptions" style="display: none;">
+            <!-- Add your filter options here -->
+            <div class="form-group">
+                <label for="Catid">Category:</label>
+                <select class="form-control" id="Catid">
+                    <option value="">Select Category</option> <!-- Default option -->
+                    <!-- Populate options dynamically using Razor syntax -->
+                    @foreach (var category in Model.GeneralCategories)
+                    {
+                        <option value="@category.Catid">@category.Catname</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="categoryId">FromDate:</label>
+                <input name="FromDate" id="FromDate" type="date" class="form-control" placeholder="" />
+
+            </div>
+            <div class="form-group">
+                <label for="categoryId">ToDate:</label>
+                <input name="ToDate" id="ToDate" type="date" class="form-control" placeholder="" />
+
+            </div>
+            <button id="filterBtnsubmit" style="background-color:forestgreen;margin-bottom:10px;" class="btn btn-primary"> Submit</button>
+
+
+
+            <!-- Add other filter options as needed -->
+        </div>
+
+        <div class="form-group">
+            <div class="row">
+                <div class="col-md-6">
+                    <!-- Search input field -->
+                    <input id="searchInput" type="text" class="form-control" placeholder="Search..." fdprocessedid="746hg">
+                </div>
+                <div class="col-md-2">
+                    <!-- Search button with Font Awesome icon -->
+                    <button id="searchBtn" class="btn btn-primary btn-block" fdprocessedid="f2bwtm">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+                <div class="col-md-1">
+                    <label for="sortSelect" class="mt-2">Sort by:</label>
+                </div>
+                <div class="col-md-3">
+                    <select id="sortSelect" class="form-control" fdprocessedid="udpko6">
+                        <option value="newest">Newest</option>
+                        <option value="oldest">Oldest</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+
+
+
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a style="color:black" class="nav-link active" data-category-id="0" href="#category-0">All Blogs</a>
+            </li>
+
+            @if (Model.SelectedCategories.Count > 0)
+            {
+                foreach (var item in Model.SelectedCategories)
+                {
+                    if (item != null)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" style="color:black" href="#category-@item.Catid" data-category-id="@item.Catid" data-toggle="tab">@item.Catname</a>
+                        </li>
+                    }
+                }
+            }
+        </ul>
+
+        <!-- Blog details containers -->
+        <div id="blog-container" class="mt-3">
+
+
+        </div>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Add 'active' class to the first nav-link initially
+            $('.nav-link').first().addClass('active');
+
+            // Event handler for navigation bar clicks
+            $('.nav-link').click(function (e) {
+                e.preventDefault();
+                $('.nav-link').removeClass('active'); // Remove active class from all nav-links
+                $(this).addClass('active'); // Add active class to clicked nav-link
+
+                var target = $(this).attr('href'); // Get the target container ID
+                $('.blog-details').hide(); // Hide all blog details containers
+                $(target).show(); // Show the corresponding blog details container
+            });
+        });
+    </script>
+
+    <style>
+        .nav-link.active {
+            color: blue !important;
+        }
+    </style>
+</body>
+</html>
+<script>
+    $(document).ready(function () {
+        debugger;
+       
+        loadBlogs(0, 1,"getcategoryblogs","newest");
+       
+        $('.nav-link').click(function (e) {
+            debugger;
+            e.preventDefault();
+            $('.nav-link').removeClass('active'); // Remove active class from all nav-links
+            $(this).addClass('active'); // Add active class to clicked nav-link
+
+            var categoryId = $(this).data('category-id'); // Get the category ID
+            console.log("cate" + categoryId);
+            loadBlogs(categoryId, 1,"getcategoryblogs"); // Load blogs for the selected category
+        });
+
+        $('#filterBtn').click(function () {
+            debugger;
+            $('#filterOptions').toggle();
+        });
+
+
+    });
+
+    // Function to load blogs using AJAX
+    function loadBlogs(categoryId, pagenumber, actionname, sortingoption) {
+
+        var sortingoption = $("#sortSelect").val();
+        debugger;
+        if (actionname == "getcategoryblogs") {
+            $.ajax({
+                url: '/Account/getcategoryblogs', // Change the URL to your controller action to fetch blogs
+                type: 'GET',
+                data: { categoryId: categoryId, pagenumber: pagenumber, sortingoption: sortingoption }, // Pass the category ID as parameter
+
+                //data: { categoryId: categoryId, pagenumber: pagenumber, FilterFromDate: FilterFromDate, FilterToDate:FilterToDate }, // Pass the category ID as parameter
+                success: function (data) {
+                    debugger;
+                    $('#blog-container').html(data); // Update the blog container with fetched data
+                    console.log(data);
+
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText); // Log any errors to the console
+                }
+            });
+        }
+        else if (actionname == "search") {
+            var keyword = $('#searchInput').val();
+            $.ajax({
+                type: 'GET',
+                url: '/Account/search', // Specify the URL to which you want to send the AJAX request
+                data: {
+                    pagenumber: pagenumber,
+                    searchkeyword: keyword,
+                    sortingoption: sortingoption
+                },
+                success: function (data) {
+                    debugger;
+
+                    $('#blog-container').html(data);
+
+
+                    console.log(data);
+                },
+                error: function (xhr, status, error) {
+                    // Handle errors here
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+        else
+        {
+
+            var catid = $('#Catid').val();
+            var fromDate = $('#FromDate').val();
+            var toDate = $('#ToDate').val();
+            //if (catid !== "" || fromDate !== "" || toDate !== "") {
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/Account/filterblog', // Specify the URL to which you want to send the AJAX request
+                    data: {
+                        pagenumber: pagenumber,
+                        Catid: catid,
+                        FromDate: fromDate,
+                        ToDate: toDate,
+                        sortingoption: sortingoption
+                    },
+                    success: function (data) {
+                        debugger;
+                        //$("#filterapplied").val("true");
+                        //$("#filterappliedCatid").val(Catid);
+                        //$("#filterappliedFromDate").val($('#filterappliedFromDate').val());
+                        //console.log("FromDate")
+                        //console.log($("#filterappliedFromDate").val())
+                        //$("#filterappliedToDate").val(ToDate);
+                        $('#blog-container').html(data); // Update the blog container with fetched data
+
+
+                        console.log(data);
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle errors here
+                        console.error(xhr.responseText);
+                    }
+                });
+
+            //}
+
+
+        }
+        
+    }
+
+    $(document).ready(function () {
+        // Bind a click event handler to the button
+
+        $('#filterBtnsubmit').click(function () {
+            // Get form data
+            debugger;
+            var catid = $('#Catid').val();
+            var fromDate = $('#FromDate').val();
+            var toDate = $('#ToDate').val();
+           // if (catid !== "" || fromDate !== "" || toDate !== "") {
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/Account/filterblog', // Specify the URL to which you want to send the AJAX request
+                    data: {
+                        pagenumber:1,
+                        Catid: catid,
+                        FromDate: fromDate,
+                        ToDate: toDate
+                    },
+                    success: function (data) {
+                        debugger;
+                        $("#filterapplied").val("true");
+                        $("#filterappliedCatid").val("Catid");
+                     
+                        $("#filterappliedFromDate").val("FromDate");
+                        console.log("FromDate")
+                       console.log($("#filterappliedFromDate").val(""))
+                        $("#filterappliedToDate").val("ToDate");
+                        $('#blog-container').html(data); // Update the blog container with fetched data
+
+
+                        console.log(data);
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle errors here
+                        console.error(xhr.responseText);
+                    }
+                });
+
+          //  }
+
+            
+        });
+    });
+
+
+
+
+
+
+
+</script>
+<script>
+    $(document).ready(function () {
+        // Click handler for clickable elements
+        $(document).on('click', '.clickable', function (e) {
+            debugger;
+
+            e.preventDefault();
+            var detailUrl = $(this).data('url');
+            window.location.href = detailUrl;
+        });
+
+        // Click handler for read more links
+        $(document).on('click', '.read-more', function (e) {
+
+            e.preventDefault();
+            var detailUrl = $(this).closest('.clickable').data('url');
+            window.location.href = detailUrl;
+        });
+
+
+        $('#searchBtn').click(function () {
+
+            var searchKeyword = $('#searchInput').val();
+            search(searchKeyword);
+
+
+        });
+
+        $('#sortSelect').change(function () {
+            var selectedOption = $(this).val(); // Get the selected option value
+            var actionName = $('#paginationWrapper').data('actionname'); // Get the data-actionname attribute value from the parent element
+            var catid = $('#paginationWrapper').data('searchcatid'); // Get the data-searchcatid attribute value from the parent element
+            
+            loadBlogs(catid, 1, actionName, selectedOption); // Assuming 'getcategoryblogs' is for loading newest blogs
+        });
+
+
+
+
+    });
+    function search(keyword,pagenumber) {
+        $.ajax({
+            type: 'GET',
+            url: '/Account/search', // Specify the URL to which you want to send the AJAX request
+            data: {
+                pagenumber: pagenumber,
+                searchkeyword: keyword
+
+            },
+            success: function (data) {
+                debugger;
+
+                $('#blog-container').html(data);
+
+
+                console.log(data);
+            },
+            error: function (xhr, status, error) {
+                // Handle errors here
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+
+
+
+    //$(document).ready(function () {
+    //    console.log("anchor tag is "); // Check if the selector returns the expected element
+
+    //    console.log($('a[href="/Account/myblogs"]')); // Check if the selector returns the expected element
+    //    $('a[href="/Account/myblogs"]').click(function () {
+    //        window.location.href = "/Account/myblogs";
+    //    });
+    //});
+
+
+
+</script>
+

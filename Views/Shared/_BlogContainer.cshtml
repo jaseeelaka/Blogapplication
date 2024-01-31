@@ -1,0 +1,141 @@
+﻿@model HomepageModel
+
+@functions {
+    // Define the JavaScript function within the @functions block
+    public string GetTruncatedContent(string content, int maxLength)
+    {
+        if (content == null || content.Length <= maxLength)
+        {
+            return content;
+        }
+        else
+        {
+            return content.Substring(0, maxLength) + "...";
+        }
+    }
+}
+
+<div class="container">
+    <div class="row">
+        @if (Model.Blogs.Count == 0)
+        {
+            <div class="container">
+                <div class="row">
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        No Record Found
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            @foreach (var blog in Model.Blogs)
+            {
+                // Format the DateTime object to display in "MMM dd yyyy" format
+                string createddate = blog.createddate.ToString("MMM dd yyyy");
+
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="clickable" data-url="@Url.Action("detail", "Account", new { blogid = blog.Blogid })">
+                            <div style="height: 200px; overflow: hidden;">
+                                <!-- Set a fixed height for the image container -->
+                                @if (!string.IsNullOrEmpty(blog.hiddenImageName1))
+                                {
+                                    <img src="@blog.hiddenImageName1" class="card-img-top" alt="Blog Image" style="width: 100%; height: auto;">
+                                }
+                                else if (!string.IsNullOrEmpty(blog.hiddenImageName2))
+                                {
+                                    <img src="@blog.hiddenImageName2" class="card-img-top" alt="Blog Image" style="width: 100%; height: auto;">
+                                }
+                                else
+                                {
+                                    <img src="@blog.hiddenImageName3" class="card-img-top" alt="Blog Image" style="width: 100%; height: auto;">
+                                }
+                            </div>
+                            <div class="card-body">
+                                <div class="card-title-limit">
+                                    <h5 class="card-title clickable" data-url="@Url.Action("detail", "Account", new { blogid = blog.Blogid })">
+                                        @GetTruncatedContent(@blog.title, 18)
+                                    </h5>
+                                </div>
+                                <!-- Display truncated blog content -->
+                                <div class="addReadMore showlesscontent post-item__excerpt">
+                                    @Html.Raw(GetTruncatedContent(blog.blogContent, 18)) <!-- Adjust the length as per your requirement -->
+                                    @if (blog.blogContent.Length > 5)
+                                    {
+                                        <a href='#' class="read-more">Read More</a>
+                                    }
+                                </div>
+                                <!-- Displaying time ago and first letter of the username -->
+                                <p class="text-muted mt-2">
+                                    <i class="far fa-clock"></i>
+                                    @createddate  |
+                                    <span class="user-initial-circle">@blog.username.Substring(0, 1).ToUpper()</span>@blog.username
+                                    (@blog.likecount)<span class="far fa-thumbs-up"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <div class="row" id="paginationWrapper" data-actionname=@Model.ActionName data-searchcatid=@Model.CategoryId>
+        <div class="col-md-12">
+            <ul class="pagination justify-content-center">
+                @if (Model.TotalItems > 0)
+                {
+                    var totalPages = (int)Math.Ceiling((decimal)Model.TotalItems / (decimal)Model.PageSize);
+
+                    <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                        <a class="page-link" href="#" onclick="loadBlogs(@Model.CategoryId,@Model.CurrentPage - 1,'@Model.ActionName','newest')">Previous</a>
+                    </li>
+
+                    @for (int page = 1; page <= totalPages; page++)
+                    {
+                        var j = page;
+                        <li class="page-item @(page == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="#" onclick="loadBlogs(@Model.CategoryId,@j,'@Model.ActionName','newest')">@j</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(Model.CurrentPage == totalPages ? "disabled" : "")">
+                        <a class="page-link" href="#" onclick="loadBlogs(@Model.CategoryId,@Model.CurrentPage + 1,'@Model.ActionName','newest')">Next</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+<style>
+    ul.pagination li {
+        margin: 0 6px;
+        font-size: 14px;
+    }
+
+    .page-item.disabled .page-link {
+        cursor: not-allowed;
+        opacity: 0.8;
+        color: #929ba3;
+        pointer-events: auto;
+    }
+
+        .page-item.disabled .page-link:hover {
+            color: #929ba3;
+        }
+
+    .page-item .page-link {
+        color: #333;
+        border-radius: 5px;
+        background-color: #ffffff;
+        border-color: #dee2e6;
+        box-shadow: none;
+        min-width: 36px;
+        text-align: center;
+    }
+</style>

@@ -1,0 +1,94 @@
+﻿@model List<Categories>
+@{
+    ViewData["Title"] = "get-started/topics";
+    Layout = null;
+    int categoryCount = ViewBag.categoryCount;
+    int? userid = Context.Session.GetInt32("userid");
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Sign In</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css" integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+   
+   
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <div class="text-center">
+                    <i class="fas fa-blog fa-3x"></i>
+                    <h5 class="mt-3"> What are you interested in?</h5>
+                    <h6 class="mt-3">  Choose three or more.</h6>
+                </div>
+                @*<div asp-validation-summary="All" class="text-danger"></div>*@
+
+                <form method="post" asp-action="SelectedCategory">
+                    @Html.AntiForgeryToken()
+                    @foreach (var category in Model)
+                    {
+                        <div>
+                            <input  type="checkbox" name="Catid" id="id_@category.Catid" value="@category.Catid" />
+                            <label>@category.Catname</label>
+                        </div>
+                    }
+
+                    <button type="submit" id="submitButton" class="btn btn-primary btn-block">Continue</button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    @*<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>*@
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+<script>
+   
+    $(document).ready(function () {
+        debugger;
+        var categoryCount = '@categoryCount';
+        var userid = '@userid'
+        
+        if (categoryCount >= 3) {
+            $("#submitButton").prop('disabled', false);
+        }
+        else {
+            $("#submitButton").prop('disabled', true);
+        }
+
+        $('input[type="checkbox"]').on('click', function () {
+            handleCheckboxClick();
+        });
+
+    });
+
+    function handleCheckboxClick() {
+        var selectedCategories = [];
+
+        // Loop through checkboxes to count selected ones
+        $('input[type="checkbox"]').each(function () {
+            if ($(this).prop('checked')) {
+                selectedCategories.push($(this).val());
+            }
+        });
+
+        if (selectedCategories.length >= 3) {
+            $("#submitButton").prop('disabled', false);
+        } else {
+            $("#submitButton").prop('disabled', true);
+        }
+    }
+
+   
+   
+
+ 
+   
+
+</script>

@@ -1,0 +1,190 @@
+﻿@model ProfileModel
+
+@{
+    ViewData["Title"] = "profile";
+    Layout = "~/Views/Shared/_LayoutAuthor.cshtml";
+    int? userid = Context.Session.GetInt32("userid");
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+
+
+    <div class="container mt-5">
+        <form id="profileForm" method="post" asp-action="profile" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div class="form-group row">
+                <label for="profilePicture" id="avatarLabel" class="col-12 col-md-3 avatar-label">
+                    <input type="file" class="form-control d-none" id="profilePicture" name="profilePicture" accept="image/*" onchange="displayImage(this)">
+                    <input aspfor="imageName" type="hidden" id="imageName" value='@Model.imageName' name="imageName">
+                    @if (!string.IsNullOrEmpty(Model.imageName))
+                    {
+                        <img id="previewImage" src='@Model.imageName' alt="" class="avatar-image img-fluid">
+
+                    }
+                    else
+                    {
+                        <img id="previewImage" src="~/images/img_avatar.png" alt="" class="avatar-image img-fluid">
+
+                    }
+                    @*<img src="~/images/2d558690-a669-4e50-845c-5fe15df50b26_d1d2.jpg" />*@
+
+                    <span class="change-avatar-text">Upload Photo</span>
+                </label>
+            </div>
+            <div class="form-group row">
+                <label for="bio" class="col-12 col-md-3">Name:</label>
+                <div class="col-12 col-md-9">
+                    <input asp-for="name" type="text" class="form-control d-inline-block" placeholder="Enter your name">
+                    <span asp-validation-for="name" class="text-danger"></span>
+                    <span style="color:lightslategrey">Appears on your Profile page, as your byline, and in your responses. </span>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="bio" class="col-12 col-md-3">Bio:</label>
+                <div class="col-12 col-md-9">
+                    <textarea asp-for="bio" placeholder="Appears on your Profile and next to your stories." class="form-control" rows="4"></textarea>
+                    <span style="color:lightslategrey">Appears on your Profile and next to your stories. </span>
+
+                </div>
+            </div>
+            <input type="hidden" asp-for="userid" value='@userid' />
+            <div class="form-group row">
+                <label class="col-12 col-md-3 col-form-label">Social Links:</label>
+                <div class="col-12 col-md-9">
+                    <div class="form-group">
+                        <label for="instagramLink" class="d-inline-block">
+                            <i class="fa-brands fa-square-instagram"></i> Instagram:
+                        </label>
+                        <input asp-for="instalink" type="text" class="form-control d-inline-block" placeholder="Enter your Instagram link">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="twitterLink" class="d-inline-block">
+                            <i class="fa-brands fa-square-twitter"></i> Twitter:
+                        </label>
+                        <input type="text" asp-for="twitterlink" class="form-control d-inline-block" id="twitterLink" name="twitterLink" placeholder="Enter your Twitter link">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="facebookLink" class="d-inline-block">
+                            <i class="fa-brands fa-facebook"></i> Facebook:
+                        </label>
+                        <input type="text" asp-for="facebooklink" class="form-control d-inline-block" placeholder="Enter your Facebook link">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">Update</button>
+        </form>
+    </div>
+
+
+    <!-- Bootstrap JS and Popper.js (required for Bootstrap) -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+        function displayImage(input) {
+            debugger;
+            var preview = document.getElementById('previewImage');
+            var file = input.files[0];
+            var reader = new FileReader();
+
+            reader.onloadend = function () {
+                preview.src = reader.result;
+                document.getElementById('imageName').value = file.name; // Set the image name to the hidden field
+            };
+
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = '';
+                document.getElementById('imageName').value = '';
+            }
+        }
+
+                //document.getElementById('avatarLabel').addEventListener('click', function () {
+                //    debugger;
+                //    document.getElementById('profilePicture').click();
+                //});
+
+                //document.getElementById('profileForm').addEventListener('submit', function (event) {
+                //    event.preventDefault();
+
+                //    // Perform form submission logic here
+                //    // You can use JavaScript to fetch the form data and send it to the server
+                //    // For simplicity, you can log the form data to the console
+                //    var formData = new FormData(event.target);
+                //    for (var pair of formData.entries()) {
+                //        console.log(pair[0] + ': ' + pair[1]);
+                //    }
+                //});
+    </script>
+
+    <style>
+        /*.avatar-label {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .avatar-image {
+            width: 70%;
+            height: auto;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ddd;
+        }
+
+        .change-avatar-text {
+            position: absolute;
+            top: 80%;
+            left: 35%;
+            transform: translate(-50%, -50%);
+            color: #007bff;
+            cursor: pointer;
+        }*/
+
+      
+        .avatar-label {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .avatar-image {
+            width: 150px; /* Set your desired width */
+            height: 150px; /* Set your desired height */
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ddd;
+        }
+
+        .change-avatar-text {
+            position: absolute;
+            top: 80%;
+            left: 32%;
+            transform: translate(-50%, -50%);
+            color: #007bff;
+            cursor: pointer;
+        }
+    </style>
+
+  
+
+</body>
+</html>
+
+
+
